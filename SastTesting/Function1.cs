@@ -12,7 +12,7 @@ using System.Net.Http;
 
 namespace SastTesting
 {
-    public static class Function1
+    public class Function1
     {
         [FunctionName("Function1")]
         public static async Task<IActionResult> Run(
@@ -79,7 +79,7 @@ namespace SastTesting
         }
 
         private static readonly HttpClient client = new HttpClient();
-
+        private string test;
         [FunctionName("GetWeather")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = "weather/{city}")] HttpRequest req,
