@@ -86,6 +86,7 @@ namespace SastTesting
             string city,
             ILogger log)
         {
+            log.LogInformation("test: " + city);
             var apiUrl = $"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={Environment.GetEnvironmentVariable("WeatherApiKey")}";
             var response = await client.GetAsync(apiUrl);
             if (!response.IsSuccessStatusCode)
