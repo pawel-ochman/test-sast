@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using System.Net.Http;
 
 namespace SastTesting
 {
@@ -75,6 +76,25 @@ namespace SastTesting
                 log.LogError(ex, "Error getting user by id");
                 return new StatusCodeResult(StatusCodes.Status500InternalServerError);
             }
+        }
+
+        private static readonly HttpClient client = new HttpClient();
+
+        [FunctionName("GetWeather")]
+        public static async Task<IActionResult> Run(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "weather/{city}")] HttpRequest req,
+            string city,
+            ILogger log)
+        {
+            var apiUrl = $"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={Environment.GetEnvironmentVariable("WeatherApiKey")}";
+            var response = await client.GetAsync(apiUrl);
+            if (!response.IsSuccessStatusCode)
+            {
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+            }
+
+            var result = await response.Content.ReadAsStringAsync();
+            return new OkObjectResult(result);
         }
     }
 
