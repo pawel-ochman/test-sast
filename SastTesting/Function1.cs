@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -31,5 +32,58 @@ namespace SastTesting
 
             return new OkObjectResult(responseMessage);
         }
+
+        [FunctionName("GetUserById")]
+        public static async Task<IActionResult> GetUserById(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "users/{id}")] HttpRequest req,
+            string id,
+            ILogger log)
+        {
+            try
+            {
+                var connectionString = Environment.GetEnvironmentVariable("SqlConnectionString");
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+                    var query = $"SELECT * FROM Users WHERE Id = '{id}'";
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                        {
+                            if (reader.HasRows)
+                            {
+                                while (reader.Read())
+                                {
+                                    var user = new User
+                                    {
+                                        Id = reader["Id"].ToString(),
+                                        Name = reader["Name"].ToString(),
+                                        Email = reader["Email"].ToString(),
+                                        Password = reader["Password"].ToString(),
+                                        Phone = reader["Phone"].ToString()
+                                    };
+                                    return new OkObjectResult(user);
+                                }
+                            }
+                        }
+                    }
+                }
+                return new NotFoundResult();
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, "Error getting user by id");
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+            }
+        }
+    }
+
+    public class User
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public string Phone { get; set; }
     }
 }
