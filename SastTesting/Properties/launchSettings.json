@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "SastTesting": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7195"
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "httpPort": 33875,
+      "useSSL": false
+    }
+  }
+}
